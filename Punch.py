@@ -103,63 +103,21 @@ class Punch(object):
 
     def parse_config(self):
         """Parse the user's todo.cfg file and place the elements into a dictionary"""
-        try:
-            paths = [ getenv("HOME"), "."]
-            files = [ "todo.cfg", ".todo.cfg" ]
-	    if getenv("TODOTXT_CFG_FILE") == None:
-                configFileName = self.search_file(files, paths)
-            else:
-                configFileName = getenv("TODOTXT_CFG_FILE")
-            if configFileName == None:
-                raise ToDoConfigNotFoundError
-            configFile = open( configFileName )
-            self.propDict = dict()
-            for propLine in configFile:
-                propDef = propLine.strip()
-                if len(propDef) == 0:
-                    continue
-                if propDef[0] in ( '#' ):
-                    continue
-                if propDef[0:6] == 'export':
-                     propDef = propDef[7:]
-                punctuation = [ propDef.find(c) for c in '= ' ] + [ len(propDef) ]
-                found = min( [ pos for pos in punctuation if pos != -1 ] )
-                name= propDef[:found].rstrip()
-                value= propDef[found:].lstrip(":= ").rstrip()
-                self.propDict[name]= value.strip('"')
-            configFile.close()
-
-            # Add the users environment variables to the propDict, unless
-            # a value has already been set.
-            for key in os.environ.keys():
-                if self.propDict.has_key(key) == False:
-                    self.propDict[key] = os.environ[key]
-
-        except IOError:
-            raise ToDoConfigNotFoundError
-
-    def resolve(self,value):
-        """Replace variables in a config entry with the actual value."""
-        token = value.find('$')
-        if( token != -1 ):
-            terminus = token + value[token:].find('/')
-            ref = value[token+1:terminus]
-            refValue = self.propDict[ref]
-            value = refValue + value[terminus:]
-
-        return value
+        self.propDict = {}
+        for key in os.environ.keys():
+              self.propDict[key] = os.environ[key]
 
     def open_todo(self):
         """Open the user's todo.txt file."""
         try:
-            self.taskFile = open( self.resolve( self.propDict['TODO_FILE']), 'U' )
+            self.taskFile = open( self.propDict['TODO_FILE'], 'U' )
         except IOError:
             raise ToDoFileNotFoundError
 
     def open_file(self,filename):
         """Open a file given a filename."""
         try:
-            name = self.resolve( self.propDict['TODO_DIR'] + "/" + filename )
+            name = self.propDict['TODO_DIR'] + "/" + filename
             self.taskFile = open( name, 'U' )
         except IOError:
             raise TaskFileNotFoundError
@@ -170,7 +128,7 @@ class Punch(object):
 
     def open_punch_file(self,mode='a'):
         """Open the output file - punch.dat - in the user's TODO_DIR."""
-        name = self.resolve( self.propDict['TODO_DIR'] + "/punch.dat" )
+        name = self.propDict['TODO_DIR'] + "/punch.dat"
 
         if not os.path.exists(name):
             open( name, 'w' ).close()
@@ -183,7 +141,7 @@ class Punch(object):
 
     def open_punch_backup_file(self):
         """Open the backup file - punch.dat.backup - in the user's TODO_DIR."""
-        name = self.resolve( self.propDict['TODO_DIR'] + "/punch.dat.backup" )
+        name = self.propDict['TODO_DIR'] + "/punch.dat.backup"
         self.backupFile = open( name, 'w' )
 
     def close_punch_backup_file(self):
@@ -199,7 +157,7 @@ class Punch(object):
 
     def open_archive_file(self,mode='a'):
         """Open the archive file - punch.archive - in the user's TODO_DIR."""
-        name = self.resolve( self.propDict['TODO_DIR'] + "/punch.archive" )
+        name = self.propDict['TODO_DIR'] + "/punch.archive"
         self.archiveFile = open( name, mode )
 
     def close_archive_file(self):
@@ -553,6 +511,12 @@ Punch.py [-h] command [line-number] [filename] [archive-date]
 
         parser = OptionParser(usage=usage,version=version)
         optlist, args = parser.parse_args()
+
+        if args and args[0] == "usage":
+          print usage
+          exit(0)
+        elif args:
+          args = args[1:]
 
         if (( len(args) < 1 ) or ( len(args) > 3 )):
             raise PunchCommandError
