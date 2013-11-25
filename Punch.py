@@ -42,10 +42,6 @@ class PunchCommandError(ValueError):
     """Used to indicate that an invalid command was passed to Punch"""
 
 
-class ToDoConfigNotFoundError(IOError):
-    """Used to indicate that todo.cfg was not found on the path"""
-
-
 class ToDoFileNotFoundError(IOError):
     """Used to indicate that todo.txt was not found on the path"""
 
@@ -102,7 +98,7 @@ class Punch(object):
            return None
 
     def parse_config(self):
-        """Parse the user's todo.cfg file and place the elements into a dictionary"""
+        """Loads the user's environment into a dictionary to get access to the todo.sh configuration."""
         self.propDict = {}
         for key in os.environ.keys():
               self.propDict[key] = os.environ[key]
@@ -525,8 +521,6 @@ todo.sh punch [-h] command [line-number] [filename] [archive-date]
             punch.execute()
     except PunchCommandError:
         print usage
-    except ToDoConfigNotFoundError:
-        print "Error: Could not find configuration file (todo.cfg)"
     except ToDoFileNotFoundError:
         print "Error: Could not find todo.txt"
     except TaskFileNotFoundError:
@@ -537,4 +531,3 @@ todo.sh punch [-h] command [line-number] [filename] [archive-date]
         print "Error: No incomplete task found."
     except DateFormatError:
         print "Error: Could not translate your input into a date."
-
