@@ -488,7 +488,7 @@ if __name__ == '__main__':
     try:
         usage = \
 """
-Punch.py [-h] command [line-number] [filename] [archive-date]
+todo.sh punch [-h] command [line-number] [filename] [archive-date]
 
   Commands:
   'in' : start the timer for a todo task [line-number]
